@@ -1,0 +1,57 @@
+//- sd_sim_pagos
+
+doctype html
+html
+  head
+    block contentHead
+      include sd_head.pug
+
+  body
+
+    block contentHeadBody
+      include sd_head_body.pug
+
+    block content
+      include sd_navbar.pug
+
+    block contentSim
+        br
+        br
+        br
+        container
+          .div.col-11.text-center
+            .alert.alert-info(role='alert')
+              | Simulador de Pagos
+          hr
+          .row.col-11.text-right
+            .input-group.input-group-sm.mb-3.col-4
+              .input-group-prepend
+                span#inputGroup-sizing-sm.input-group-text Estado del servidor
+              .input-group-prepend
+                span#estado-serv.input-group-text INACTIVO
+              button#botonCambEstServ.btn.btn-info.mb-3.btn-sm(type='button') Cambiar estado
+            .input-group.input-group-sm.mb-3.col-8
+              .input-group-prepend
+                span#inputGroup-sizing-sm.input-group-text.col-12 Cantidad de compras
+                span#nro-compras.mb-3.input-group-text 0
+
+        script.
+          // ########################################################
+          // ############## CONECCION AL SERVER_PUG #################
+          
+          const socket_pagos = io('http://localhost:5555');
+
+          // ########################################################
+          // ############## ESCUCHANDO AL SERVER_PUG ################
+
+          // escucha el estado del servidor
+          socket_pagos.on('status-pagos', function(status) {
+            console.log("[status-pagos]: Se recibe la respuesta del DIST_MON"+status)
+            $('#estado-serv').text(status);
+          });
+
+          // escucha cuando se crea una nueva compra
+          socket_pagos.on('update-compras', function(cant) {
+            console.log("[update-compras]: Se cra una nueva compra"+cant)
+            $('#nro-compras').text(cant);
+          });

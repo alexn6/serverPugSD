@@ -1,0 +1,48 @@
+//- sd_home.pug
+
+doctype html
+html
+  head
+    block contentHead
+      include sd_head.pug
+
+  body
+
+    block contentHeadBody
+      include sd_head_body.pug
+
+    block content
+      include sd_navbar.pug
+
+    br
+    br
+    br
+    .chat-messages.has-text-left
+      ul#chat-messages
+    form
+        .field.has-addons
+          p.control
+            input(type='text', class='input', value='Chuck Norris', id='name')
+          p.control.is-expanded
+            input(type='text', class='input', placeholder='Escribe algo para mandar a /chat', id='message')
+          p.control
+            input(type='submit', class='button is-success', value='Post Test')
+
+    script.
+        // crea un socket desde localhost/ por defecto
+        //- const socket = io();
+        const socket = io('http://localhost:5555');
+        $('form').submit(function() {
+        const name = $('#name').val();
+        const message = $('#message').val();
+
+        socket.emit('chatter', `${name} : ${message}`);
+          $('#message').val('');
+          return false;
+        });
+
+        socket.on('chatter', function(message) {
+          $('#chat-messages').append($('<li>').text(message));
+        });
+
+    

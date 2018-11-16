@@ -1,0 +1,44 @@
+doctype html
+html
+  block link
+    -var selected = 'home'; //default
+
+  -var menu = { 'home': '/home', 'blog': '/blog', 'contact': '/contact' };
+
+  head
+    meta(charset='utf-8')
+    title AppWebPug
+    link(rel='stylesheet', type='text/css', href='/css/style.css')
+    link(rel='stylesheet', type='text/css', href='/css/bootstrap.min.css')
+    link(href='https://fonts.googleapis.com/css?family=Open+Sans:300', rel='stylesheet', type='text/css')
+    
+  body
+    script(src='https://code.jquery.com/jquery-3.3.1.slim.min.js')
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js')
+    script(src='https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js')
+
+    nav.navbar.navbar-expand-sm.bg-dark.navbar-dark.fixed-top
+      a.navbar-brand(href='#') Navbar
+      button.navbar-toggler(type='button', data-toggle='collapse', data-target='#navbarNav', aria-controls='navbarNav', aria-expanded='false', aria-label='Toggle navigation')
+        span.navbar-toggler-icon
+      #navbarNav.collapse.navbar-collapse
+        ul.navbar-nav
+          li.nav-item.active
+            a.nav-link(href='/inicio')
+              | Inicio
+              span.sr-only (current)
+          li.nav-item
+            a.nav-link(href="/sim-compras") Compras
+          li.nav-item
+            a.nav-link(href='/appWeb') AppWeb
+          li.nav-item
+            a.nav-link.disabled(href='#') Disabled
+
+    div.container
+        ul.col-md-12.row
+            a(href="/test")
+            li.col-md-3.col-md-offset-1 Register
+            a(href="/appWeb")
+            li.col-md-3 Login
+            a(href="/")
+            li.col-md-3 About Chatbox

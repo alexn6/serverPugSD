@@ -1,0 +1,252 @@
+//- sd_sim_compras
+
+doctype html
+html
+  head
+    block contentHead
+      include sd_head.pug
+
+  body
+
+    block contentHeadBody
+      include sd_head_body.pug
+
+    block content
+      include sd_navbar.pug
+
+    block contentSim
+        br
+        br
+        br
+        container
+          .div.col-11.text-center
+            .alert.alert-success.col-md-12(role='alert')
+                | Servidor de Compras
+          hr
+          .row.col-11.text-right
+            .input-group.input-group-sm.mb-3.col-6
+              .input-group-prepend
+                span#inputGroup-sizing-sm.input-group-text.col-12 Cantidad de compras
+                span#nro-compras.mb-3.input-group-text 0
+            div.text-right.col-6
+              button#botonEstado.btn.btn-info.btn-sm(type='button') Ver estado del servidor
+          br
+          //- div.col-11
+          .row.col-11.text-right
+            .input-group.input-group-sm.mb-3.col-6
+              .input-group-prepend
+                span#inputGroup-sizing-sm.input-group-text Estado del servidor
+              .input-group-prepend
+                //- span#inputGroup-sizing-sm.input-group-text INACTIVO
+                span#estado-serv.input-group-text INACTIVO
+              button#botonCambEstServ.btn.btn-info.btn-sm(type='button') Cambiar estado
+            div.text-right.col-6
+              button#botonCrearCompra.btn.btn-info.btn-sm(type='button') Crear compra
+          br
+          div.col-11
+            .input-group.input-group-sm.mb-3
+              .input-group-prepend
+                span#inputGroup-sizing-sm.input-group-text.col-12 Simulacion PASO a PASO
+              button#botonPasoPaso.btn.btn-info.btn-sm.md-3(type='button') Siguiente paso
+          br
+          div.col-11
+            .form-group.col-4
+                label(for='exampleFormControlSelect1') Tareas pendientes
+                select#selectTareasPend.form-control
+          div.col-12
+            .row.col-12
+              //- transiciones ejecutas
+              div.col-5
+                h4 Tareas ejecutadas
+                table#tb_trans.table.table-striped.table-bordered(style='width:100%')
+                  thead
+                    tr
+                      th ID Compra
+                      th Accion
+                      th Tarea
+                    tbody
+              //- mjes enviados
+              div.col-7
+                h4 Mensajes enviados
+                table#tb_mjes.table.table-striped.table-bordered(style='width:100%')
+                  thead
+                    tr
+                      th Tarea
+                      th Destino
+                      th Datos
+                    tbody
+
+          br
+          div.col-11
+            h4.text-center ========== Informacion de las compras ==========
+            //- table.table.table-dark.mb-3
+            table#tb-data-prod.table.table-striped.table-bordered(style='width:90%')
+              thead
+                tr
+                  th ID Compra
+                  th Producto
+                  th Cliente
+                  th Forma Entrega
+                  th Infraccion
+                  th Medio Pago
+                  th Costo Envio
+                  th Pago autorizado
+              tbody
+                tr
+                  td algun id
+                  td prod 1
+                  td cliente 2
+                  td correo
+                  td SI
+                  td efectivo
+                  td 400 pe
+                  td SI
+      
+        script.
+          // ########################################################
+          // ############## CONECCION AL SERVER_PUG #################
+          
+          const socket = io('http://localhost:5555');
+
+          // almacena la info historica del servidor
+          var historicoTextArea = null;
+          var nroStep = 0;
+
+          // ########################################################
+
+          // ########################################################
+          // ############## PEDIR ESTADO DEL SERVIDOR ###############
+
+          $( "#botonEstado" ).click(function() {
+            socket.emit('estado', 'PETICION ESTADO');
+            return false;
+          });
+
+          socket.on('resp-estado', function(message) {
+            console.log("[resp-estado]: Se recibe la respuesta del DIST_MON")
+            //- llenarContenidoTextArea(message);
+          });
+          socket.on('resp-estado-detalle', function(message) {
+            console.log("[resp-estado-detalle]: Se recibe la respuesta <resp-estado-detalle> del DIST_MON")
+            //- llenarContenidoTextArea(message);
+            agregarTareaTablaTareas(message);
+          });
+          socket.on('resp-env', function(message) {
+            console.log("[resp-env]: Se recibe la respuesta <resp-env> del DIST_MON")
+            //- llenarContenidoTextArea(message);
+            agregarTareaTablaMjesEnv(message);
+            console.log(message);
+            actualizarDatosProductos(message[0].datos);
+          });
+          // escucha el estado del servidor
+          socket.on('status-compras', function(status) {
+            console.log("[status-compras]: Se recibe la respuesta del DIST_MON"+status)
+            $('#estado-serv').text(status);
+          });
+          // escucha las tareas pendientes del servidor
+          socket.on('tareas-compras', function(tareas) {
+            console.log("[tareas-compras]: Se recibe la respuesta <tareas-compras> del DIST_MON"+tareas)
+            actualizarSelectTareasPend(tareas);
+          });
+          // escucha cuando se crea una nueva compra
+          socket.on('update-compras', function(cant) {
+            console.log("[update-compras]: Se cra una nueva compra"+cant)
+            $('#nro-compras').text(cant);
+          });
+
+          // ########################################################
+          // ################## PEDIR CREAR COMPRA ##################
+
+          $( "#botonCrearCompra" ).click(function() {
+            // se le indica al Server PUG que se quiere crear una compra
+            socket.emit('new-compra', 'los datos de la compra');
+            return false;
+          });
+
+          socket.on('resp-new-compra', function() {
+            console.log("[resp-new-compra]: Se recibe la respuesta del DIST_MON: OK")
+          });
+
+          // ########################################################
+          
+          // ########################################################
+          // ################ PEDIR SIGUIENTE PASO ##################
+          $( "#botonPasoPaso" ).click(function() {
+            //- alert( "Se tomo el evento del click." );
+            // (instruccion, servidor, idCompra)
+            socket.emit('sig-paso', 'compras-io', '0');
+            //- $('#message').val('');
+            nroStep++;
+            console.log("[STEP] => Nro de step: "+nroStep)
+            return false;
+          });
+
+          socket.on('resp-sig-paso', function(data) {
+            console.log("[resp-sig-paso]: Se recibe la respuesta del DIST_MON: " + data)
+            //- llenarContenidoTextArea(data);
+            agregarTareaTablaTareas(data);
+          });
+
+          // ############################################################
+          // #################### Funciones soporte #####################
+
+          function llenarContenidoTextArea(infoDetalle){
+            //- console.log("Entro a la funcion llenarContTeAr!")
+            if(historicoTextArea == null){
+              historicoTextArea = infoDetalle;
+              //- console.log("Historico = null - - - mje: "+infoDetalle);
+            }
+            else{
+              var dataTextArea = $('#textAreaEstado').val();
+              historicoTextArea = dataTextArea + '\n' +infoDetalle;
+              //- console.log("Historico != null - - - mje: "+infoDetalle+" - - - dataTextArea: "+dataTextArea);
+            }
+            //- console.log("Contenido a asignar al TXA(hist): "+historicoTextArea);
+            $('#textAreaEstado').val(historicoTextArea);
+          }
+
+          function agregarTareaTablaTareas(datos){
+            // no hay tarea para realizar
+            if(datos.tarea == undefined){
+              datos.tarea = 'nada para hacer';
+            }
+            var datosFila = '<tr><td>'+datos.id+'</td><td>'+datos.accion+'</td><td>'+datos.tarea+'</td></tr>'
+            // agregamos los datos recibidos a la tabla
+            $('#tb_trans').append(datosFila);
+          }
+
+          function agregarTareaTablaMjesEnv(mjesEnviados){
+            var cantMjesEnviados = mjesEnviados.length;
+            var datosMje;
+            for(let i= 0; i < cantMjesEnviados; i++){
+              datosMje = mjesEnviados[i];
+              var datosFila = '<tr><td>'+datosMje.tarea+'</td><td>'+datosMje.destino+'</td><td>'+datosMje.datos+'</td></tr>'
+              // agregamos los datos recibidos a la tabla
+              $('#tb_mjes').append(datosFila);
+            }
+          }
+
+          // actualiza el select con las tareas recibidas
+          function actualizarSelectTareasPend(tareas){
+            console.log(tareas);
+            $('#selectTareasPend').empty();
+            for(var i= 0; i < tareas.length; i++){
+              var datosOption = '<option> '+tareas[i];
+              $('#selectTareasPend').append(datosOption);
+            }
+            //- $('#selectTareasPend').append($('<option>', {
+            //-     value: 1,
+            //-     text: 'My option'
+            //- }));
+          }
+
+          // actualizar los datos de la tabla de productos
+          function actualizarDatosProductos(datos){
+            console.log('[ACT_DATA_PROD]: ');
+            console.log(datos);
+
+            //- var idCompra
+            //- for(var i= 0; i < tareas.length; i++){
+            //- tb-data-prod
+            //- }
+          }
