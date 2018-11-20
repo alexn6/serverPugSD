@@ -122,15 +122,12 @@ html
             return false;
           });
 
-          socket.on('resp-estado', function(message) {
-            console.log("[resp-estado]: Se recibe la respuesta del DIST_MON")
-            //- llenarContenidoTextArea(message);
-          });
           socket.on('resp-estado-detalle', function(message) {
-            console.log("[resp-estado-detalle]: Se recibe la respuesta <resp-estado-detalle> del DIST_MON")
+            console.log("[resp-estado-detalle]: Se recibe la respuesta del DIST_MON")
             //- llenarContenidoTextArea(message);
             agregarTareaTablaTareas(message);
           });
+          
           socket.on('resp-env', function(message) {
             console.log("[resp-env]: Se recibe la respuesta <resp-env> del DIST_MON")
             //- llenarContenidoTextArea(message);

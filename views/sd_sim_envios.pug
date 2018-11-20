@@ -24,23 +24,57 @@ html
               | Simulador de Envios
           hr
           .row.col-11.text-right
-            .input-group.input-group-sm.mb-3.col-4
+            .input-group.input-group-sm.mb-3.col-6
               .input-group-prepend
                 span#inputGroup-sizing-sm.input-group-text Estado del servidor
               .input-group-prepend
                 //- span#inputGroup-sizing-sm.input-group-text INACTIVO
                 span#estado-serv.input-group-text INACTIVO
               button#botonCambEstServ.btn.btn-info.mb-3.btn-sm(type='button') Cambiar estado
-            .input-group.input-group-sm.mb-3.col-8
+            .div.text-right.mb-3.col-4
+              button#botonCrearCompra.btn.btn-info.btn-sm(type='button') Crear compra
+            .input-group.input-group-sm.mb-3.col-2
               .input-group-prepend
                 span#inputGroup-sizing-sm.input-group-text.col-12 Cantidad de compras
                 span#nro-compras.mb-3.input-group-text 0
+          br
+          .row.col-11.text-left
+            .div.text-left.mb-3.col-2
+              label(for='exampleFormControlSelect1') Tareas pendientes
+            .div.text-left.mb-3.col-3
+              select#selectTareasPend.form-control
+            .div.text-left.mb-3.col-4
+              button#botonPasoPaso.btn.btn-info.btn-sm.md-3(type='button') Siguiente paso
+          div.col-11
+            .row.col-12
+              //- transiciones ejecutas
+              div.col-5
+                h4 Tareas
+                table#tb_trans.table.table-striped.table-bordered(style='width:100%')
+                  thead
+                    tr
+                      th ID Compra
+                      th Accion
+                      th Tarea
+                    tbody
+              //- mjes enviados
+              div.col-7
+                h4 Mensajes enviados
+                table#tb_mjes.table.table-striped.table-bordered(style='width:100%')
+                  thead
+                    tr
+                      th Informacion
+                      th Destino
+                      th Datos
+                    tbody
 
         script.
           // ########################################################
           // ############## CONECCION AL SERVER_PUG #################
           
           const socket_envios = io('http://localhost:5555');
+
+          var nroStep = 0;
 
           // ########################################################
           // ############## ESCUCHANDO AL SERVER_PUG ################
@@ -56,3 +90,75 @@ html
             console.log("[update-compras]: Se cra una nueva compra"+cant)
             $('#nro-compras').text(cant);
           });
+
+          // escucha cuando ingresa una tarea
+          socket_envios.on('ing-tareas-envios', function(tarea) {
+            console.log("[ing-tareas-envios]: Se recibe la respuesta del DIST_MON")
+            agregarTareaTablaTareas(tarea);
+          });
+
+          // escuchamos la resp al siguiente paso
+          socket_envios.on('resp-step-envios', function(data) {
+            console.log("[resp-step-envios]: Se recibe la respuesta del DIST_MON: " + data)
+            agregarTareaTablaTareas(data);
+          });
+
+          // escuchamos los mjes que envio el servidor hacia otrs servidores
+          socket_envios.on('mjes-env-envios', function(message) {
+            console.log("[mjes-env-envios]: Se recibe la respuesta del DIST_MON")
+            agregarTareaTablaMjesEnv(message);
+            console.log(message);
+          });
+
+          // escucha las tareas pendientes del servidor
+          socket_envios.on('tareas-envios', function(tareas) {
+            console.log("[tareas-envios]: Se recibe la respuesta del DIST_MON"+tareas)
+            actualizarSelectTareasPend(tareas);
+          });
+
+          // ########################################################
+          // ################ PEDIR SIGUIENTE PASO ##################
+          $( "#botonPasoPaso" ).click(function() {
+            socket_envios.emit('sig-paso', 'envios', '0');
+            nroStep++;
+            console.log("[STEP] => Nro de step: "+nroStep)
+            return false;
+          });
+
+          // ############################################################
+          // #################### Funciones soporte #####################
+
+          function agregarTareaTablaTareas(datos){
+            // no hay tarea para realizar
+            if(datos.tarea == undefined){
+              datos.tarea = 'nada para hacer';
+            }
+            var datosFila = '<tr><td>'+datos.id+'</td><td>'+datos.accion+'</td><td>'+datos.tarea+'</td></tr>'
+            // agregamos los datos recibidos a la tabla
+            $('#tb_trans').append(datosFila);
+          }
+
+          function agregarTareaTablaMjesEnv(mjesEnviados){
+            var cantMjesEnviados = mjesEnviados.length;
+            var datosMje;
+            for(let i= 0; i < cantMjesEnviados; i++){
+              datosMje = mjesEnviados[i];
+              var datosFila = '<tr><td>'+datosMje.tarea+'</td><td>'+datosMje.destino+'</td><td>'+datosMje.datos+'</td></tr>'
+              // agregamos los datos recibidos a la tabla
+              $('#tb_mjes').append(datosFila);
+            }
+          }
+
+           // actualiza el select con las tareas recibidas
+          function actualizarSelectTareasPend(tareas){
+            console.log(tareas);
+            $('#selectTareasPend').empty();
+            for(var i= 0; i < tareas.length; i++){
+              var datosOption = '<option> '+tareas[i];
+              $('#selectTareasPend').append(datosOption);
+            }
+            //- $('#selectTareasPend').append($('<option>', {
+            //-     value: 1,
+            //-     text: 'My option'
+            //- }));
+          }

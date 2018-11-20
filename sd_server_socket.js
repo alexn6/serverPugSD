@@ -79,7 +79,7 @@ ioSockectServer.on('connection', (socket) => {
 
     // ************** solicitud de sigPaso *****************
     socket.on('sig-paso', (server, idCompra) => {
-      console.log('Pide proximo STEP : ', server)
+      console.log('Pide proximo STEP ['+server+'] ')
       // se pasa la peticion al DIST_MON-IO
       sockClientDistMon.emit('next-step', server, idCompra);
     })
@@ -116,30 +116,11 @@ sockClientDistMon.on('connect', function (sock) {
 });
 
 // se escucha la resp a la peticion "mje-status" al DIST_MON-IO
-sockClientDistMon.on('resp-mje-status', function(data) {
-  console.log("[resp-mje-status]: Mje recibido del SERVER distMon: ",data);
-  // enviado al cliente PUG
-  ioSockectServer.sockets.emit('resp-estado', data);
-})
-sockClientDistMon.on('resp-mje-status-detalle', function(data) {
-  console.log("[resp-mje-status-detalle]: Mje recibido del SERVER distMon: ",data);
-  // enviado al cliente PUG
-  ioSockectServer.sockets.emit('resp-estado-detalle', data);
-})
-
-// se escucha la resp a la peticion "next-step" al DIST_MON-IO
-sockClientDistMon.on('resp-next-step', function(data) {
-  console.log("[resp-next-step]: Mje recibido del SERVER distMon: ",data);
-  // enviado al cliente PUG
-  ioSockectServer.sockets.emit('resp-sig-paso', data);
-})
-
-// escuchamos los mjes enviados desde el disMon
-sockClientDistMon.on('resp-env-step', function(data) {
-  console.log("[resp-env-step]: Mje recibido del SERVER distMon: ",data);
-  // enviado al cliente PUG
-  ioSockectServer.sockets.emit('resp-env', data);
-})
+// sockClientDistMon.on('resp-mje-status', function(data) {
+//   console.log("[resp-mje-status]: Mje recibido del SERVER distMon: ",data);
+//   // enviado al cliente PUG
+//   ioSockectServer.sockets.emit('resp-estado', data);
+// })
 
 // ######################################################
 // ################## EVENTOS SIN SRV ###################
@@ -166,6 +147,26 @@ sockClientDistMon.on('tareas_pend_comp', function(data) {
   ioSockectServer.sockets.emit('tareas-compras', data);
 })
 
+sockClientDistMon.on('resp-mje-status-detalle', function(data) {
+  console.log("[resp-mje-status-detalle]: Mje recibido del SERVER distMon: ",data);
+  // enviado al cliente PUG
+  ioSockectServer.sockets.emit('resp-estado-detalle', data);
+})
+
+// se escucha la resp a la peticion "next-step" al DIST_MON-IO
+sockClientDistMon.on('resp-next-step', function(data) {
+  console.log("[resp-next-step]: Mje recibido del SERVER distMon: ",data);
+  // enviado al cliente PUG
+  ioSockectServer.sockets.emit('resp-sig-paso', data);
+})
+
+// escuchamos los mjes enviados desde el disMon
+sockClientDistMon.on('resp-env-step', function(data) {
+  console.log("[resp-env-step]: Mje recibido del SERVER distMon: ",data);
+  // enviado al cliente PUG
+  ioSockectServer.sockets.emit('resp-env', data);
+})
+
 // ######################################################
 // ################## EVENTOS SRV_WEB ###################
 
@@ -173,6 +174,33 @@ sockClientDistMon.on('srv-web-status', function(data) {
   console.log("[srv-web-status]: Mje recibido del SERVER distMon: "+data);
   // enviado al cliente PUG
   ioSockectServer.sockets.emit('status-web', data);
+})
+
+sockClientDistMon.on('tareas-pend-web', function(data) {
+  console.log("[tareas-pend-web]: Mje recibido del SERVER distMon: ",data);
+  // enviado al cliente PUG
+  ioSockectServer.sockets.emit('tareas-web', data);
+})
+
+// se ecucha cuando ingresa una tarea la servidor
+sockClientDistMon.on('tarea-ing-web', function(data) {
+  console.log("[tarea-ing-web]: Mje recibido del SERVER distMon: ",data);
+  // enviado al cliente PUG
+  ioSockectServer.sockets.emit('ing-tareas-web', data);
+})
+
+// se escucha la resp a la peticion "next-step" al DIST_MON-IO
+sockClientDistMon.on('resp-next-step-web', function(data) {
+  console.log("[resp-next-step-web]: Mje recibido del SERVER distMon: ",data);
+  // enviado al cliente PUG
+  ioSockectServer.sockets.emit('resp-step-web', data);
+})
+
+// escuchamos los mjes enviados desde el disMon
+sockClientDistMon.on('resp-mjes-env-web', function(data) {
+  console.log("[resp-mjes-env-web]: Mje recibido del SERVER distMon: ",data);
+  // enviado al cliente PUG
+  ioSockectServer.sockets.emit('mjes-env-web', data);
 })
 
 // ######################################################
@@ -184,6 +212,32 @@ sockClientDistMon.on('srv-pub-status', function(data) {
   ioSockectServer.sockets.emit('status-publicacion', data);
 })
 
+sockClientDistMon.on('tareas-pend-pub', function(data) {
+  console.log("[tareas-pend-pub]: Mje recibido del SERVER distMon: ",data);
+  // enviado al cliente PUG
+  ioSockectServer.sockets.emit('tareas-pub', data);
+})
+
+sockClientDistMon.on('tarea-ing-pub', function(data) {
+  console.log("[tarea-ing-pub]: Mje recibido del SERVER distMon: ",data);
+  // enviado al cliente PUG
+  ioSockectServer.sockets.emit('ing-tareas-pub', data);
+})
+
+// se escucha la resp a la peticion "next-step" al DIST_MON-IO
+sockClientDistMon.on('resp-next-step-pub', function(data) {
+  console.log("[resp-next-step-pub]: Mje recibido del SERVER distMon: ",data);
+  // enviado al cliente PUG
+  ioSockectServer.sockets.emit('resp-step-pub', data);
+})
+
+// escuchamos los mjes enviados desde el disMon
+sockClientDistMon.on('resp-mjes-env-pub', function(data) {
+  console.log("[resp-mjes-env-pub]: Mje recibido del SERVER distMon: ",data);
+  // enviado al cliente PUG
+  ioSockectServer.sockets.emit('mjes-env-pub', data);
+})
+
 // ######################################################
 // ############## EVENTOS SRV_INFRACCIONES ##############
 
@@ -191,6 +245,32 @@ sockClientDistMon.on('srv-infrac-status', function(data) {
   console.log("[srv-infrac-status]: Mje recibido del SERVER distMon: "+data);
   // enviado al cliente PUG
   ioSockectServer.sockets.emit('status-infraccion', data);
+})
+
+sockClientDistMon.on('tareas-pend-infrac', function(data) {
+  console.log("[tareas-pend-infrac]: Mje recibido del SERVER distMon: ",data);
+  // enviado al cliente PUG
+  ioSockectServer.sockets.emit('tareas-infrac', data);
+})
+
+sockClientDistMon.on('tarea-ing-infrac', function(data) {
+  console.log("[tarea-ing-infrac]: Mje recibido del SERVER distMon: ",data);
+  // enviado al cliente PUG
+  ioSockectServer.sockets.emit('ing-tareas-infrac', data);
+})
+
+// se escucha la resp a la peticion "next-step" al DIST_MON-IO
+sockClientDistMon.on('resp-next-step-infrac', function(data) {
+  console.log("[resp-next-step-infrac]: Mje recibido del SERVER distMon: ",data);
+  // enviado al cliente PUG
+  ioSockectServer.sockets.emit('resp-step-infrac', data);
+})
+
+// escuchamos los mjes enviados desde el disMon
+sockClientDistMon.on('resp-mjes-env-infrac', function(data) {
+  console.log("[resp-mjes-env-infrac]: Mje recibido del SERVER distMon: ",data);
+  // enviado al cliente PUG
+  ioSockectServer.sockets.emit('mjes-env-infrac', data);
 })
 
 // ######################################################
@@ -202,6 +282,32 @@ sockClientDistMon.on('srv-envios-status', function(data) {
   ioSockectServer.sockets.emit('status-envios', data);
 })
 
+sockClientDistMon.on('tareas-pend-envios', function(data) {
+  console.log("[tareas-pend-envios]: Mje recibido del SERVER distMon: ",data);
+  // enviado al cliente PUG
+  ioSockectServer.sockets.emit('tareas-envios', data);
+})
+
+sockClientDistMon.on('tarea-ing-envios', function(data) {
+  console.log("[tarea-ing-envios]: Mje recibido del SERVER distMon: ",data);
+  // enviado al cliente PUG
+  ioSockectServer.sockets.emit('ing-tareas-envios', data);
+})
+
+// se escucha la resp a la peticion "next-step" al DIST_MON-IO
+sockClientDistMon.on('resp-next-step-envios', function(data) {
+  console.log("[resp-next-step-envios]: Mje recibido del SERVER distMon: ",data);
+  // enviado al cliente PUG
+  ioSockectServer.sockets.emit('resp-step-envios', data);
+})
+
+// escuchamos los mjes enviados desde el disMon
+sockClientDistMon.on('resp-mjes-env-envios', function(data) {
+  console.log("[resp-mjes-env-envios]: Mje recibido del SERVER distMon: ",data);
+  // enviado al cliente PUG
+  ioSockectServer.sockets.emit('mjes-env-envios', data);
+})
+
 // ######################################################
 // ################# EVENTOS SRV_PAGOS ##################
 
@@ -209,6 +315,32 @@ sockClientDistMon.on('srv-pagos-status', function(data) {
   console.log("[srv-pagos-status]: Mje recibido del SERVER distMon: "+data);
   // enviado al cliente PUG
   ioSockectServer.sockets.emit('status-pagos', data);
+})
+
+sockClientDistMon.on('tareas-pend-pagos', function(data) {
+  console.log("[tareas-pend-pagos]: Mje recibido del SERVER distMon: ",data);
+  // enviado al cliente PUG
+  ioSockectServer.sockets.emit('tareas-pagos', data);
+})
+
+sockClientDistMon.on('tarea-ing-pagos', function(data) {
+  console.log("[tarea-ing-pagos]: Mje recibido del SERVER distMon: ",data);
+  // enviado al cliente PUG
+  ioSockectServer.sockets.emit('ing-tareas-pagos', data);
+})
+
+// se escucha la resp a la peticion "next-step" al DIST_MON-IO
+sockClientDistMon.on('resp-next-step-pagos', function(data) {
+  console.log("[resp-next-step-pagos]: Mje recibido del SERVER distMon: ",data);
+  // enviado al cliente PUG
+  ioSockectServer.sockets.emit('resp-step-pagos', data);
+})
+
+// escuchamos los mjes enviados desde el disMon
+sockClientDistMon.on('resp-mjes-env-pagos', function(data) {
+  console.log("[resp-mjes-env-pagos]: Mje recibido del SERVER distMon: ",data);
+  // enviado al cliente PUG
+  ioSockectServer.sockets.emit('mjes-env-pagos', data);
 })
 
 // ########################################################
