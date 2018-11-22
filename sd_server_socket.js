@@ -77,6 +77,22 @@ ioSockectServer.on('connection', (socket) => {
     })
     // ****************************************************
 
+    // *********** peticion inicio del servidor ***********
+    socket.on('init-serv', (server, modo) => {
+      console.log('Se pide arrancar el servidor '+server+' : modo '+modo)
+      // se pasa la peticion al DIST_MON-IO
+      sockClientDistMon.emit('start-server', server, modo);
+    })
+    // ****************************************************
+    
+    // *********** peticion detencion del servidor ***********
+    socket.on('stop-serv', (server) => {
+      console.log('Se pide detener el servidor '+server)
+      // se pasa la peticion al DIST_MON-IO
+      sockClientDistMon.emit('stop-server', server);
+    })
+    // ****************************************************
+
     // ************** solicitud de sigPaso *****************
     socket.on('sig-paso', (server, idCompra) => {
       console.log('Pide proximo STEP ['+server+'] ')

@@ -23,36 +23,65 @@ html
             .alert.alert-success.col-md-12(role='alert')
                 | Servidor de Compras
           hr
-          .row.col-11.text-right
-            .input-group.input-group-sm.mb-3.col-6
-              .input-group-prepend
-                span#inputGroup-sizing-sm.input-group-text.col-12 Cantidad de compras
-                span#nro-compras.mb-3.input-group-text 0
-            div.text-right.col-6
-              button#botonEstado.btn.btn-info.btn-sm(type='button') Ver estado del servidor
-          br
+          //- .row.col-11.text-right
+          //-   .input-group.input-group-sm.mb-3.col-6
+          //-     .input-group-prepend
+          //-       span#inputGroup-sizing-sm.input-group-text.col-12 Cantidad de compras
+          //-       span#nro-compras.mb-3.input-group-text 0
+          //-   div.text-right.col-6
+          //-     button#botonEstado.btn.btn-info.btn-sm(type='button') Ver estado del servidor
+          //- br
+          //- //- div.col-11
+          //- .row.col-11.text-right
+          //-   .input-group.input-group-sm.mb-3.col-6
+          //-     .input-group-prepend
+          //-       span#inputGroup-sizing-sm.input-group-text Estado del servidor
+          //-     .input-group-prepend
+          //-       //- span#inputGroup-sizing-sm.input-group-text INACTIVO
+          //-       span#estado-serv.input-group-text INACTIVO
+          //-     button#botonCambEstServ.btn.btn-info.btn-sm(type='button') Cambiar estado
+          //-   div.text-right.col-6
+          //-     button#botonCrearCompra.btn.btn-info.btn-sm(type='button') Crear compra
+          //- br
           //- div.col-11
+          //-   .input-group.input-group-sm.mb-3
+          //-     .input-group-prepend
+          //-       span#inputGroup-sizing-sm.input-group-text.col-12 Simulacion PASO a PASO
+          //-     button#botonPasoPaso.btn.btn-info.btn-sm.md-3(type='button') Siguiente paso
+          //- br
+          //- div.col-11
+          //-   .form-group.col-4
+          //-       label(for='exampleFormControlSelect1') Tareas pendientes
+          //-       select#selectTareasPend.form-control
           .row.col-11.text-right
-            .input-group.input-group-sm.mb-3.col-6
+            .input-group.input-group-sm.mb-3.col-4
               .input-group-prepend
                 span#inputGroup-sizing-sm.input-group-text Estado del servidor
               .input-group-prepend
-                //- span#inputGroup-sizing-sm.input-group-text INACTIVO
                 span#estado-serv.input-group-text INACTIVO
-              button#botonCambEstServ.btn.btn-info.btn-sm(type='button') Cambiar estado
-            div.text-right.col-6
+              button#botonCambEstServ.btn.btn-info.mb-3.btn-sm(type='button') Cambiar estado
+            .div.text-right.mb-3.col-3
+              .form-check.form-check-inline
+                input#inlineRadio1.form-check-input(type='radio', name='inlineRadioOptions', value='normal')
+                label.form-check-label(for='inlineRadio1') normal
+              .form-check.form-check-inline
+                input#inlineRadio2.form-check-input(type='radio', name='inlineRadioOptions', value='step')
+                label.form-check-label(for='inlineRadio2') step
+              button#botonRunServ.btn.btn-info.btn-sm(type='button') Iniciar servidor
+            .div.text-right.mb-3.col-3
               button#botonCrearCompra.btn.btn-info.btn-sm(type='button') Crear compra
-          br
-          div.col-11
-            .input-group.input-group-sm.mb-3
+            .input-group.input-group-sm.mb-3.col-2
               .input-group-prepend
-                span#inputGroup-sizing-sm.input-group-text.col-12 Simulacion PASO a PASO
-              button#botonPasoPaso.btn.btn-info.btn-sm.md-3(type='button') Siguiente paso
+                span#inputGroup-sizing-sm.input-group-text.col-12 Cantidad de compras
+                span#nro-compras.mb-3.input-group-text 0
           br
-          div.col-11
-            .form-group.col-4
-                label(for='exampleFormControlSelect1') Tareas pendientes
-                select#selectTareasPend.form-control
+          .row.col-11.text-left
+            .div.text-left.mb-3.col-2
+              label(for='exampleFormControlSelect1') Tareas pendientes
+            .div.text-left.mb-3.col-3
+              select#selectTareasPend.form-control
+            .div.text-left.mb-3.col-4
+              button#botonPasoPaso.btn.btn-info.btn-sm.md-3(type='button') Siguiente paso
           div.col-12
             .row.col-12
               //- transiciones ejecutas
@@ -108,9 +137,8 @@ html
           
           const socket = io('http://localhost:5555');
 
-          // almacena la info historica del servidor
-          var historicoTextArea = null;
           var nroStep = 0;
+          const SERVER = "compras";
 
           // ########################################################
 
@@ -124,13 +152,11 @@ html
 
           socket.on('resp-estado-detalle', function(message) {
             console.log("[resp-estado-detalle]: Se recibe la respuesta del DIST_MON")
-            //- llenarContenidoTextArea(message);
             agregarTareaTablaTareas(message);
           });
           
           socket.on('resp-env', function(message) {
             console.log("[resp-env]: Se recibe la respuesta <resp-env> del DIST_MON")
-            //- llenarContenidoTextArea(message);
             agregarTareaTablaMjesEnv(message);
             console.log(message);
             actualizarDatosProductos(message[0].datos);
@@ -139,6 +165,17 @@ html
           socket.on('status-compras', function(status) {
             console.log("[status-compras]: Se recibe la respuesta del DIST_MON"+status)
             $('#estado-serv').text(status);
+
+            if(status == "ACTIVO"){
+              $( "#botonRunServ" ).text('Detener servidor');
+              $("#inlineRadio1").prop( "disabled", true );
+              $("#inlineRadio2").prop( "disabled", true );
+            }
+            else{
+              $( "#botonRunServ" ).text('Iniciar servidor');
+              $("#inlineRadio1").prop( "disabled", false );
+              $("#inlineRadio2").prop( "disabled", false );
+            }
           });
           // escucha las tareas pendientes del servidor
           socket.on('tareas-compras', function(tareas) {
@@ -184,23 +221,48 @@ html
             agregarTareaTablaTareas(data);
           });
 
+          // ########################################################
+          // ############## CONTROL ESTADO SERVIDOR #################
+          $( "#botonRunServ" ).click(function() {
+            // controlar el texto del boton y en base a eso
+            // lanzar un evento distinto (INICIAR/ DETENER)
+            var modoRun = $( this ).text();
+            if(modoRun == "Iniciar servidor"){
+              //- alert("Pide iniciar el servidor");
+              var modo = $( "input:checked" ).val();
+              if(typeof(modo) == 'undefined'){
+                alert("Debe seleccionar el modo del servidor");
+              }
+              else{
+                socket.emit('init-serv', SERVER, modo);
+              }
+            }
+            else{
+              //- alert("Pide detener el servidor");
+              socket.emit('stop-serv', SERVER, modo);
+            }
+            
+            // luego se deberia cambiar el contenido del servidor
+            return false;
+          });
+
           // ############################################################
           // #################### Funciones soporte #####################
 
-          function llenarContenidoTextArea(infoDetalle){
-            //- console.log("Entro a la funcion llenarContTeAr!")
-            if(historicoTextArea == null){
-              historicoTextArea = infoDetalle;
-              //- console.log("Historico = null - - - mje: "+infoDetalle);
-            }
-            else{
-              var dataTextArea = $('#textAreaEstado').val();
-              historicoTextArea = dataTextArea + '\n' +infoDetalle;
-              //- console.log("Historico != null - - - mje: "+infoDetalle+" - - - dataTextArea: "+dataTextArea);
-            }
-            //- console.log("Contenido a asignar al TXA(hist): "+historicoTextArea);
-            $('#textAreaEstado').val(historicoTextArea);
-          }
+          //- function llenarContenidoTextArea(infoDetalle){
+          //-   //- console.log("Entro a la funcion llenarContTeAr!")
+          //-   if(historicoTextArea == null){
+          //-     historicoTextArea = infoDetalle;
+          //-     //- console.log("Historico = null - - - mje: "+infoDetalle);
+          //-   }
+          //-   else{
+          //-     var dataTextArea = $('#textAreaEstado').val();
+          //-     historicoTextArea = dataTextArea + '\n' +infoDetalle;
+          //-     //- console.log("Historico != null - - - mje: "+infoDetalle+" - - - dataTextArea: "+dataTextArea);
+          //-   }
+          //-   //- console.log("Contenido a asignar al TXA(hist): "+historicoTextArea);
+          //-   $('#textAreaEstado').val(historicoTextArea);
+          //- }
 
           function agregarTareaTablaTareas(datos){
             // no hay tarea para realizar

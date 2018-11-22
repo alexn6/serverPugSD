@@ -24,14 +24,21 @@ html
               | Simulador Web
           hr
           .row.col-11.text-right
-            .input-group.input-group-sm.mb-3.col-6
+            .input-group.input-group-sm.mb-3.col-4
               .input-group-prepend
                 span#inputGroup-sizing-sm.input-group-text Estado del servidor
               .input-group-prepend
-                //- span#inputGroup-sizing-sm.input-group-text INACTIVO
                 span#estado-serv.input-group-text INACTIVO
               button#botonCambEstServ.btn.btn-info.mb-3.btn-sm(type='button') Cambiar estado
-            .div.text-right.mb-3.col-4
+            .div.text-right.mb-3.col-3
+              .form-check.form-check-inline
+                input#inlineRadio1.form-check-input(type='radio', name='inlineRadioOptions', value='normal')
+                label.form-check-label(for='inlineRadio1') normal
+              .form-check.form-check-inline
+                input#inlineRadio2.form-check-input(type='radio', name='inlineRadioOptions', value='step')
+                label.form-check-label(for='inlineRadio2') step
+              button#botonRunServ.btn.btn-info.btn-sm(type='button') Iniciar servidor
+            .div.text-right.mb-3.col-3
               button#botonCrearCompra.btn.btn-info.btn-sm(type='button') Crear compra
             .input-group.input-group-sm.mb-3.col-2
               .input-group-prepend
@@ -75,6 +82,7 @@ html
           const socket_web = io('http://localhost:5555');
 
           var nroStep = 0;
+          const SERVER = "web";
 
           // ########################################################
           // ############## ESCUCHANDO AL SERVER_PUG ################
@@ -83,6 +91,18 @@ html
           socket_web.on('status-web', function(status) {
             console.log("[status-web]: Se recibe la respuesta del DIST_MON"+status)
             $('#estado-serv').text(status);
+
+            if(status == "ACTIVO"){
+              $( "#botonRunServ" ).text('Detener servidor');
+              $("#inlineRadio1").prop( "disabled", true );
+              $("#inlineRadio2").prop( "disabled", true );
+            }
+            else{
+              $( "#botonRunServ" ).text('Iniciar servidor');
+              $("#inlineRadio1").prop( "disabled", false );
+              $("#inlineRadio2").prop( "disabled", false );
+            }
+            
           });
 
           // escucha cuando se crea una nueva compra
@@ -94,7 +114,6 @@ html
           // escucha cuando ingresa una tarea
           socket_web.on('ing-tareas-web', function(tarea) {
             console.log("[ing-tareas-web]: Se recibe la respuesta del DIST_MON")
-            //- llenarContenidoTextArea(message);
             agregarTareaTablaTareas(tarea);
           });
 
@@ -123,6 +142,31 @@ html
             socket_web.emit('sig-paso', 'web', '0');
             nroStep++;
             console.log("[STEP] => Nro de step: "+nroStep)
+            return false;
+          });
+
+          // ########################################################
+          // ############## CONTROL ESTADO SERVIDOR #################
+          $( "#botonRunServ" ).click(function() {
+            // controlar el texto del boton y en base a eso
+            // lanzar un evento distinto (INICIAR/ DETENER)
+            var modoRun = $( this ).text();
+            if(modoRun == "Iniciar servidor"){
+              //- alert("Pide iniciar el servidor");
+              var modo = $( "input:checked" ).val();
+              if(typeof(modo) == 'undefined'){
+                alert("Debe seleccionar el modo del servidor");
+              }
+              else{
+                socket_web.emit('init-serv', SERVER, modo);
+              }
+            }
+            else{
+              //- alert("Pide detener el servidor");
+              socket_web.emit('stop-serv', SERVER, modo);
+            }
+            
+            // luego se deberia cambiar el contenido del servidor
             return false;
           });
 
@@ -163,5 +207,12 @@ html
             //-     text: 'My option'
             //- }));
           }
+
+          // controldel radio button
+          //- $( "input" ).on( "click", function() {
+          //-   var opcionElegida = $( "input:checked" ).val();
+          //-   //- $( "#log" ).html( $( "input:checked" ).val() + " is elegido!" );
+          //-   alert("opcion : "+opcionElegida);
+          //- });
 
           
